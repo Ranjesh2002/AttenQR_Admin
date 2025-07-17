@@ -95,7 +95,6 @@ export default function Login() {
           </p>
         </div>
         <div className="w-1/2 relative bg-gradient-to-br from-blue-700 via-indigo-700 to-purple-800 flex items-center justify-center p-5">
-          {/* Floating SVG background or animation */}
           <div className="text-white text-center">
             <h1 className="text-2xl font-semibold mb-2">Attendance</h1>
             <h2 className="text-xl font-light">Management System</h2>
