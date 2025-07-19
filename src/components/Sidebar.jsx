@@ -9,6 +9,7 @@ import {
   User,
   Bell,
   CalendarDays,
+  History,
 } from "lucide-react";
 
 export default function AdminSidebar() {
@@ -19,6 +20,7 @@ export default function AdminSidebar() {
   const navItems = [
     { name: "Dashboard", icon: <LayoutDashboard />, path: "/dashboard" },
     { name: "Attendance", icon: <Calendar />, path: "/attendance" },
+    { name: "Atten History", icon: <History />, path: "/history" },
     { name: "Students", icon: <Users />, path: "/students" },
     { name: "Teachers", icon: <User />, path: "/teachers" },
     { name: "Alert", icon: <Bell />, path: "/alert" },

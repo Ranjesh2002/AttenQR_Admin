@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import Attendance from "./components/Attendance";
+import History from "./components/Attendance_History";
 import Login from "./components/Login";
 import AdminLayout from "./components/Layout";
 import Students from "./components/Students";
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" element={<AdminLayout />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="attendance" element={<Attendance />} />
+            <Route path="history" element={<History />} />
             <Route path="students" element={<Students />} />
             <Route path="teachers" element={<Teachers />} />
             <Route path="alert" element={<Alerts />} />
