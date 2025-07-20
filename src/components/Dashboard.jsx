@@ -1,4 +1,23 @@
 import { Users, TrendingUp, AlertTriangle } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
 const statsData = [
   {
@@ -56,6 +75,23 @@ const recentActivity = [
     subject: "Database",
   },
 ];
+const attendanceTrendData = [
+  { day: "Mon", attendance: 85 },
+  { day: "Tue", attendance: 92 },
+  { day: "Wed", attendance: 78 },
+  { day: "Thu", attendance: 89 },
+  { day: "Fri", attendance: 94 },
+  { day: "Sat", attendance: 87 },
+  { day: "Sun", attendance: 82 },
+];
+const subjectWiseData = [
+  { name: "Mathematics", value: 92, color: "#3B82F6" },
+  { name: "Physics", value: 88, color: "#10B981" },
+  { name: "Chemistry", value: 85, color: "#F59E0B" },
+  { name: "Biology", value: 90, color: "#EF4444" },
+  { name: "English", value: 87, color: "#8B5CF6" },
+];
+
 export default function Dashboard() {
   return (
     <div className="space-y-6">
@@ -75,6 +111,72 @@ export default function Dashboard() {
             </div>
           </div>
         ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="rounded-xl shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-gray-900">
+              Weekly Attendance Trend
+            </CardTitle>
+            <CardDescription className="text-gray-500">
+              Average attendance percentage by day
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={attendanceTrendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="day" tick={{ fill: "#6b7280" }} />
+                <YAxis tick={{ fill: "#6b7280" }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "white",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                  }}
+                />
+                <Bar
+                  dataKey="attendance"
+                  fill="#3B82F6"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-xl shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-gray-900">
+              Subject-wise Attendance
+            </CardTitle>
+            <CardDescription className="text-gray-500">
+              Attendance distribution across subjects
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={subjectWiseData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, value }) => `${name}: ${value}%`}
+                  labelLine={false}
+                >
+                  {subjectWiseData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
       <div className="rounded-xl shadow-sm bg-white p-4">
         <p className="text-lg font-semibold text-gray-900 mb-4">

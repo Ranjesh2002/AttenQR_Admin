@@ -1,5 +1,23 @@
 import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Eye, Users, Clock } from "lucide-react";
+import AttendanceHistory from "./StudentsAttendanceDetail";
 
 const todaysAttendance = [
   {
@@ -46,6 +64,7 @@ const todaysAttendance = [
 
 export default function Attendance() {
   const [selectedSession, setSelectedSession] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
 
   const getAttendanceRate = (present, total) => {
     return Math.round((present / total) * 100);
@@ -53,174 +72,184 @@ export default function Attendance() {
 
   const getAttendanceBadge = (rate) => {
     if (rate >= 90)
-      return (
-        <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
-          Excellent
-        </span>
-      );
+      return <Badge className="bg-green-100 text-green-800">Excellent</Badge>;
     if (rate >= 75)
-      return (
-        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
-          Good
-        </span>
-      );
+      return <Badge className="bg-blue-100 text-blue-800">Good</Badge>;
     if (rate >= 60)
-      return (
-        <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">
-          Average
-        </span>
-      );
-    return (
-      <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-medium">
-        Poor
-      </span>
-    );
+      return <Badge className="bg-yellow-100 text-yellow-800">Average</Badge>;
+    return <Badge className="bg-red-100 text-red-800">Poor</Badge>;
   };
 
   return (
     <div className="space-y-6">
-      {/* Header Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-xl shadow-sm bg-white p-4">
-          <div className="flex items-center">
-            <Users className="h-8 w-8 text-blue-600 bg-blue-50 p-2 rounded-lg" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">
-                Total Sessions
-              </p>
-              <p className="text-2xl font-bold text-gray-900">
-                {todaysAttendance.length}
-              </p>
+        <Card className="rounded-xl shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Users className="h-8 w-8 text-blue-600 bg-blue-50 p-2 rounded-lg" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600">
+                  Total Sessions
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {todaysAttendance.length}
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="rounded-xl shadow-sm bg-white p-4">
-          <div className="flex items-center">
-            <Clock className="h-8 w-8 text-green-600 bg-green-50 p-2 rounded-lg" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">
-                Avg Attendance
-              </p>
-              <p className="text-2xl font-bold text-gray-900">
-                {Math.round(
-                  todaysAttendance.reduce(
-                    (acc, curr) =>
-                      acc + (curr.presentCount / curr.totalStudents) * 100,
-                    0
-                  ) / todaysAttendance.length
-                )}
-                %
-              </p>
+        <Card className="rounded-xl shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Clock className="h-8 w-8 text-green-600 bg-green-50 p-2 rounded-lg" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600">
+                  Avg Attendance
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {Math.round(
+                    todaysAttendance.reduce(
+                      (acc, curr) =>
+                        acc + (curr.presentCount / curr.totalStudents) * 100,
+                      0
+                    ) / todaysAttendance.length
+                  )}
+                  %
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="rounded-xl shadow-sm bg-white p-4">
-          <div className="flex items-center">
-            <Eye className="h-8 w-8 text-orange-600 bg-orange-50 p-2 rounded-lg" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">
-                Low Attendance
-              </p>
-              <p className="text-2xl font-bold text-gray-900">
-                {
-                  todaysAttendance.filter(
-                    (session) =>
-                      (session.presentCount / session.totalStudents) * 100 < 75
-                  ).length
-                }
-              </p>
+        <Card className="rounded-xl shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Eye className="h-8 w-8 text-orange-600 bg-orange-50 p-2 rounded-lg" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600">
+                  Low Attendance
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {
+                    todaysAttendance.filter(
+                      (session) =>
+                        (session.presentCount / session.totalStudents) * 100 <
+                        75
+                    ).length
+                  }
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="rounded-xl shadow-sm bg-white p-11">
-        <div className="mb-4">
-          <p className="text-lg font-semibold text-gray-900">
+      <Card className="rounded-xl shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-gray-900">
             Today's Attendance
-          </p>
-          <p className="text-gray-500">
+          </CardTitle>
+          <CardDescription className="text-gray-500">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
               year: "numeric",
               month: "long",
               day: "numeric",
             })}
-          </p>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead>
-              <tr>
-                <th className="text-left text-gray-700 font-semibold p-2">
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-gray-200">
+                <TableHead className="font-semibold text-gray-700">
                   Subject
-                </th>
-                <th className="text-left text-gray-700 font-semibold p-2">
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
                   Teacher
-                </th>
-                <th className="text-left text-gray-700 font-semibold p-2">
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
                   Time
-                </th>
-                <th className="text-left text-gray-700 font-semibold p-2">
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
                   Present
-                </th>
-                <th className="text-left text-gray-700 font-semibold p-2">
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
                   Absent
-                </th>
-                <th className="text-left text-gray-700 font-semibold p-2">
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
                   Rate
-                </th>
-                <th className="text-left text-gray-700 font-semibold p-2">
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
                   Status
-                </th>
-                <th className="text-left text-gray-700 font-semibold p-2">
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
                   Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {todaysAttendance.map((session) => {
                 const rate = getAttendanceRate(
                   session.presentCount,
                   session.totalStudents
                 );
                 return (
-                  <tr key={session.id} className="hover:bg-gray-50">
-                    <td className="p-4 font-medium text-gray-900">
+                  <TableRow
+                    key={session.id}
+                    className="border-gray-100 hover:bg-gray-50"
+                  >
+                    <TableCell className="font-medium text-gray-900">
                       {session.subject}
-                    </td>
-                    <td className="p-4 text-gray-600">{session.teacher}</td>
-                    <td className="p-4 text-gray-600">{session.time}</td>
-                    <td className="p-4">
+                    </TableCell>
+                    <TableCell className="text-gray-600">
+                      {session.teacher}
+                    </TableCell>
+                    <TableCell className="text-gray-600">
+                      {session.time}
+                    </TableCell>
+                    <TableCell>
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         {session.presentCount}
                       </span>
-                    </td>
-                    <td className="p-4">
+                    </TableCell>
+                    <TableCell>
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                         {session.absentCount}
                       </span>
-                    </td>
-                    <td className="p-4 font-medium">{rate}%</td>
-                    <td className="p-4">{getAttendanceBadge(rate)}</td>
-                    <td className="p-4">
-                      <button
-                        className="flex items-center text-sm text-blue-600 hover:underline"
+                    </TableCell>
+                    <TableCell className="font-medium">{rate}%</TableCell>
+                    <TableCell>{getAttendanceBadge(rate)}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-lg"
                         onClick={() => setSelectedSession(session.id)}
                       >
-                        <Eye className="h-4 w-4 mr-1" /> View Details
-                      </button>
-                    </td>
-                  </tr>
+                        <Eye className="h-4 w-4 mr-1" />
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+      {selectedSession && (
+        <AttendanceHistory
+          isOpen={showDetails}
+          onClose={() => {
+            setShowDetails(false);
+            setSelectedSession(null);
+          }}
+          sessionId={selectedSession}
+          sessionInfo={todaysAttendance.find((s) => s.id === selectedSession)}
+        />
+      )}
     </div>
   );
 }
