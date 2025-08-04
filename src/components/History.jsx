@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import AttendanceHistory from "./StudentsAttendanceDetail";
 
 const mockAttendanceHistory = [
   {
@@ -55,6 +56,8 @@ export default function History() {
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedDateRange, setSelectedDateRange] = useState("");
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedSession, setSelectedSession] = useState(null);
 
   const filteredHistory = mockAttendanceHistory.filter((record) => {
     const matchesSearch =
@@ -67,11 +70,15 @@ export default function History() {
     return matchesSearch && matchesSubject && matchesStatus;
   });
 
-  const getStatusBadgeVariant = (status) => {
-    if (status === "Present") return "default";
-    if (status === "Late") return "secondary";
-    if (status === "Absent") return "destructive";
-    return "default";
+
+  const getAttendanceBadge = (rate) => {
+    if (rate >= 90)
+      return <Badge className="bg-green-100 text-green-800">Excellent</Badge>;
+    if (rate >= 75)
+      return <Badge className="bg-blue-100 text-blue-800">Good</Badge>;
+    if (rate >= 60)
+      return <Badge className="bg-yellow-100 text-yellow-800">Average</Badge>;
+    return <Badge className="bg-red-100 text-red-800">Poor</Badge>;
   };
 
   const getRateBadge = (rate) => {
@@ -197,13 +204,18 @@ export default function History() {
                   <TableCell>{record.date}</TableCell>
                   <TableCell>{record.time}</TableCell>
                   <TableCell>{getRateBadge(record.rate)}</TableCell>
+                  <TableCell>{getAttendanceBadge(record.rate)}</TableCell>
+
                   <TableCell>
-                    <Badge variant={getStatusBadgeVariant(record.status)}>
-                      {record.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm" className="rounded-lg">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg"
+                      onClick={() => {
+                        setSelectedSession(record.id);
+                        setShowDetails(true);
+                      }}
+                    >
                       <Eye className="h-4 w-4 mr-1" />
                       View Details
                     </Button>
@@ -220,6 +232,19 @@ export default function History() {
           )}
         </CardContent>
       </Card>
+      {selectedSession && (
+        <AttendanceHistory
+          isOpen={showDetails}
+          onClose={() => {
+            setShowDetails(false);
+            setSelectedSession(null);
+          }}
+          sessionId={selectedSession}
+          sessionInfo={mockAttendanceHistory.find(
+            (s) => s.id === selectedSession
+          )}
+        />
+      )}
     </div>
   );
 }

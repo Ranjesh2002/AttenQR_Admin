@@ -46,8 +46,8 @@ const todaysAttendance = [
     teacher: "Dr. Williams",
     date: "2024-01-15",
     time: "02:00 PM",
-    presentCount: 25,
-    absentCount: 8,
+    presentCount: 24,
+    absentCount: 9,
     totalStudents: 33,
   },
   {
@@ -226,7 +226,10 @@ export default function Attendance() {
                         variant="outline"
                         size="sm"
                         className="rounded-lg"
-                        onClick={() => setSelectedSession(session.id)}
+                        onClick={() => {
+                          setSelectedSession(session.id);
+                          setShowDetails(true);
+                        }}
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         View Details

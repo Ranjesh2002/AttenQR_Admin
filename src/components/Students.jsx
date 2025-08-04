@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -26,57 +25,66 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Eye, Search, Users, GraduationCap, AlertTriangle } from "lucide-react";
-
-const studentsData = [
-  {
-    id: "23186532",
-    name: "Ranjesh Thakur",
-    email: "ranjesh@mail.com",
-    semester: "5",
-    attendanceRate: 92,
-    totalClasses: 48,
-    presentClasses: 44,
-  },
-  {
-    id: "23186533",
-    name: "Ratik Bajracharya",
-    email: "ratik@mail.com",
-    semester: "5",
-    attendanceRate: 88,
-    totalClasses: 48,
-    presentClasses: 42,
-  },
-  {
-    id: "23186534",
-    name: "Sumit Ray",
-    email: "sumit@mail.com",
-    semester: "5",
-    attendanceRate: 65,
-    totalClasses: 48,
-    presentClasses: 31,
-  },
-  {
-    id: "23186535",
-    name: "Aadarsha Sunam",
-    email: "aadarsha@mail.com",
-    semester: "5",
-    attendanceRate: 94,
-    totalClasses: 48,
-    presentClasses: 45,
-  },
-];
+import adminApi from "@/utils/api";
+import StudentData from "./StudentData";
 
 export default function Students() {
-  const navigate = useNavigate();
-  const [selectedSemester, setSelectedSemester] = useState("5");
+  const [selectedSession, setSelectedSession] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedSemester, setSelectedSemester] = useState("3rd");
   const [searchTerm, setSearchTerm] = useState("");
+  const [stu, setStu] = useState([]);
+  const [low, setLow] = useState([]);
+  const [atten, setAtten] = useState([]);
+  const [stulist, setStulist] = useState([]);
 
-  const filteredStudents = studentsData.filter(
+  useEffect(() => {
+    const fetchstu = async () => {
+      try {
+        const res = await adminApi.get("/total_stu/");
+        setStu(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    const fetchlow = async () => {
+      try {
+        const res = await adminApi.get("/alerts/low-attendance/");
+        setLow(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    const fetchatten = async () => {
+      try {
+        const res = await adminApi.get("/average_percentage/");
+        setAtten(res.data.average_attendance_percentage);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    const fetchattenlist = async () => {
+      try {
+        const res = await adminApi.get("/attendance_list/");
+        setStulist(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchstu();
+    fetchlow();
+    fetchatten();
+    fetchattenlist();
+  }, []);
+
+  const filteredStudents = stulist.filter(
     (student) =>
-      student.semester === selectedSemester &&
-      (student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.email.toLowerCase().includes(searchTerm.toLowerCase()))
+      selectedSemester === "all" ||
+      (student.semester === selectedSemester &&
+        (student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.email.toLowerCase().includes(searchTerm.toLowerCase())))
   );
 
   const getAttendanceBadge = (rate) => {
@@ -89,14 +97,6 @@ export default function Students() {
     return <Badge className="bg-red-100 text-red-800">Poor</Badge>;
   };
 
-  const lowAttendanceCount = filteredStudents.filter(
-    (s) => s.attendanceRate < 75
-  ).length;
-  const avgAttendance = Math.round(
-    filteredStudents.reduce((acc, curr) => acc + curr.attendanceRate, 0) /
-      filteredStudents.length
-  );
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -108,9 +108,7 @@ export default function Students() {
                 <p className="text-sm font-medium text-gray-600">
                   Total Students
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {filteredStudents.length}
-                </p>
+                <p className="text-2xl font-bold text-gray-900">{stu.length}</p>
               </div>
             </div>
           </CardContent>
@@ -124,9 +122,7 @@ export default function Students() {
                 <p className="text-sm font-medium text-gray-600">
                   Avg Attendance
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {avgAttendance}%
-                </p>
+                <p className="text-2xl font-bold text-gray-900">{atten}%</p>
               </div>
             </div>
           </CardContent>
@@ -140,9 +136,7 @@ export default function Students() {
                 <p className="text-sm font-medium text-gray-600">
                   Low Attendance
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {lowAttendanceCount}
-                </p>
+                <p className="text-2xl font-bold text-gray-900">{low.length}</p>
               </div>
             </div>
           </CardContent>
@@ -179,9 +173,11 @@ export default function Students() {
                 <SelectValue placeholder="Select semester" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="6">6</SelectItem>
-                <SelectItem value="7">7</SelectItem>
+                <SelectItem value="all">Semester</SelectItem>
+                <SelectItem value="1st">1st</SelectItem>
+                <SelectItem value="2nd">2nd</SelectItem>
+                <SelectItem value="3rd">3rd</SelectItem>
+                <SelectItem value="4th">4th</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -217,7 +213,6 @@ export default function Students() {
                 <TableRow
                   key={student.id}
                   className="border-gray-100 hover:bg-gray-50 cursor-pointer"
-                  onClick={() => navigate(`/admin/students/${student.id}`)}
                 >
                   <TableCell className="font-medium text-blue-600">
                     {student.id}
@@ -229,7 +224,7 @@ export default function Students() {
                     {student.email}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {student.attendanceRate}%
+                    {student.attendance}%
                   </TableCell>
                   <TableCell className="text-gray-600">
                     {student.presentClasses}/{student.totalClasses}
@@ -242,9 +237,9 @@ export default function Students() {
                       variant="outline"
                       size="sm"
                       className="rounded-lg"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/admin/students/${student.id}`);
+                      onClick={() => {
+                        setSelectedSession(student.id);
+                        setShowDetails(true);
                       }}
                     >
                       <Eye className="h-4 w-4 mr-1" />
@@ -257,6 +252,17 @@ export default function Students() {
           </Table>
         </CardContent>
       </Card>
+      {selectedSession && (
+        <StudentData
+          isOpen={showDetails}
+          onClose={() => {
+            setShowDetails(false);
+            setSelectedSession(null);
+          }}
+          sessionId={selectedSession}
+          sessionInfo={stulist.find((s) => s.id === selectedSession)}
+        />
+      )}
     </div>
   );
 }
