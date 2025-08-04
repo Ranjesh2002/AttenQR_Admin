@@ -5,7 +5,6 @@ import {
   Users,
   Calendar,
   LogOut,
-  // Menu,
   User,
   Bell,
   CalendarDays,

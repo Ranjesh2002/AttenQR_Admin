@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,44 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CalendarDays, Clock, Users, BookOpen, Heading1 } from "lucide-react";
+import { CalendarDays, Clock, Users, BookOpen, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-
-const mockSessions = [
-  {
-    id: "1",
-    teacher: "Ranjesh",
-    subject: "IT",
-    date: "2024-01-15",
-    startTime: "09:00",
-    endTime: "10:30",
-    totalStudents: 25,
-    status: "Upcoming",
-  },
-  {
-    id: "2",
-    teacher: "Ranjesh",
-    subject: "IT",
-    date: "2024-01-15",
-    startTime: "11:00",
-    endTime: "12:30",
-    totalStudents: 22,
-    status: "Upcoming",
-  },
-  {
-    id: "3",
-    teacher: "Ranjesh",
-    subject: "IT",
-    date: "2024-01-16",
-    startTime: "14:00",
-    endTime: "15:30",
-    totalStudents: 28,
-    status: "Upcoming",
-  },
-];
+import adminApi from "@/utils/api";
 
 export default function ClassSession() {
-  const [session, setSession] = useState(mockSessions);
+  const [teachers, setTeachers] = useState([]);
+  const [session, setSession] = useState([]);
   const [formData, setFormData] = useState({
     teacher: "",
     subject: "",
@@ -58,11 +27,36 @@ export default function ClassSession() {
     totalStudents: "",
   });
 
+  useEffect(() => {
+    const fetchTeacher = async () => {
+      try {
+        const res = await adminApi.get("/teachers/");
+        setTeachers(res.data);
+      } catch (error) {
+        toast("Failed to fetch class sessions");
+        console.error(error);
+      }
+    };
+
+    fetchSessions();
+    fetchTeacher();
+  }, []);
+
+  const fetchSessions = async () => {
+    try {
+      const res = await adminApi.get("/class-sessions/");
+      setSession(res.data);
+    } catch (error) {
+      toast("Failed to fetch class sessions");
+      console.error(error);
+    }
+  };
+
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const createSession = () => {
+  const createSession = async () => {
     if (
       !formData.teacher ||
       !formData.subject ||
@@ -72,43 +66,80 @@ export default function ClassSession() {
       !formData.totalStudents
     ) {
       toast("Error: Please fill in all fields");
-
       return;
     }
-    const newSession = {
-      id: (session.length + 1).toString(),
-      teacher: formData.teacher,
-      subject: formData.subject,
-      date: formData.date,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      totalStudents: parseInt(formData.totalStudents),
-      status: "Upcoming",
-    };
 
-    setSession((prev) => [...prev, newSession]);
-    setFormData({
-      teacher: "",
-      subject: "",
-      date: "",
-      startTime: "",
-      endTime: "",
-      totalStudents: "",
-    });
+    try {
+      await adminApi.post("/create-class-session/", {
+        teacher_id: formData.teacher,
+        subject: formData.subject,
+        date: formData.date,
+        start_time: formData.startTime,
+        end_time: formData.endTime,
+        total_students: formData.totalStudents,
+      });
 
-    toast(`${formData.subject} session has been scheduled successfully`);
+      toast(`${formData.subject} session has been scheduled successfully`);
+      setFormData({
+        teacher: "",
+        subject: "",
+        date: "",
+        startTime: "",
+        endTime: "",
+        totalStudents: "",
+      });
+
+      fetchSessionsForTeacher(formData.teacher);
+      fetchSessions();
+    } catch (error) {
+      toast("Failed to create class session");
+      console.error(error);
+    }
+  };
+
+  const fetchSessionsForTeacher = async (teacherId) => {
+    if (!teacherId) return;
+    try {
+      const res = await adminApi.get(
+        `/class-sessions/?teacher_id=${teacherId}`
+      );
+      setSession(res.data);
+    } catch (error) {
+      toast("Failed to fetch class sessions");
+      console.error(error);
+    }
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Upcoming":
-        return "text-blue-600 bg-blue-50";
-      case "Ongoing":
-        return "text-green-600 bg-green-50";
-      case "Completed":
-        return "text-gray-600 bg-gray-50";
-      default:
-        return "text-gray-600 bg-gray-50";
+    if (status === "Upcoming") {
+      return "text-blue-600 bg-blue-50";
+    } else if (status === "Ongoing") {
+      return "text-green-600 bg-green-50";
+    } else if (status === "Completed") {
+      return "text-gray-600 bg-gray-50";
+    } else {
+      return "text-gray-600 bg-gray-50";
+    }
+  };
+
+  function getSessionStatus(date, startTime, endTime) {
+    const now = new Date();
+    const start = new Date(`${date}T${startTime}`);
+    const end = new Date(`${date}T${endTime}`);
+
+    if (now < start) return "Upcoming";
+    if (now >= start && now <= end) return "Ongoing";
+    return "Completed";
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this session?"))
+      return;
+    try {
+      await adminApi.delete(`/delete-class-session/${id}/`);
+      fetchSessions();
+    } catch (err) {
+      console.error("Failed to delete session", err);
     }
   };
 
@@ -132,12 +163,22 @@ export default function ClassSession() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="teacher">Teacher</Label>
-              <Input
+              <select
                 id="teacher"
-                placeholder="Enter teacher name"
+                className="w-full border rounded px-3 py-2"
                 value={formData.teacher}
-                onChange={(e) => handleChange("teacher", e.target.value)}
-              />
+                onChange={(e) => {
+                  handleChange("teacher", e.target.value);
+                  fetchSessionsForTeacher(e.target.value); 
+                }}
+              >
+                <option value="">Select a teacher</option>
+                {teachers.map((teacher) => (
+                  <option key={teacher.id} value={teacher.id}>
+                    {teacher.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="subject">Subject</Label>
@@ -211,38 +252,52 @@ export default function ClassSession() {
                 <TableHead>Time</TableHead>
                 <TableHead>Students</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Delete</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {session.map((session) => (
-                <TableRow key={session.id}>
-                  <TableCell className="font-medium">
-                    {session.teacher}
-                  </TableCell>
-                  <TableCell>{session.subject}</TableCell>
-                  <TableCell>
-                    {new Date(session.date).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    {session.startTime} - {session.endTime}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Users className="h-4 w-4 text-gray-500" />
-                      {session.totalStudents}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        session.status
-                      )}`}
-                    >
-                      {session.status}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {session.map((sessionItem) => {
+                const sessionStatus = getSessionStatus(
+                  sessionItem.date,
+                  sessionItem.start_time,
+                  sessionItem.end_time
+                );
+                return (
+                  <TableRow key={sessionItem.id}>
+                    <TableCell className="font-medium">
+                      {sessionItem.teacher}
+                    </TableCell>
+                    <TableCell>{sessionItem.subject}</TableCell>
+                    <TableCell>
+                      {new Date(sessionItem.date).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      {sessionItem.start_time} - {sessionItem.end_time}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Users className="h-4 w-4 text-gray-500" />
+                        {sessionItem.total_students}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          sessionStatus
+                        )}`}
+                      >
+                        {sessionStatus}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Trash2
+                        onClick={() => handleDelete(sessionItem.id)}
+                        className="text-red-500 hover:underline w-7"
+                      ></Trash2>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>

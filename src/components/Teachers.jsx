@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -9,63 +9,21 @@ import {
   BookOpen,
   Calendar,
 } from "lucide-react";
-
-const mockTeachers = [
-  {
-    id: "T001",
-    name: "Dr. Sarah Johnson",
-    email: "sarah.johnson@school.edu",
-    phone: "+1 (555) 123-4567",
-    subjects: ["Mathematics", "Statistics"],
-    department: "Mathematics",
-    joinDate: "2020-08-15",
-    status: "active",
-    classesAssigned: 5,
-    totalStudents: 150,
-  },
-  {
-    id: "T002",
-    name: "Prof. Michael Chen",
-    email: "michael.chen@school.edu",
-    phone: "+1 (555) 987-6543",
-    subjects: ["Physics", "Chemistry"],
-    department: "Science",
-    joinDate: "2019-09-01",
-    status: "active",
-    classesAssigned: 4,
-    totalStudents: 120,
-  },
-  {
-    id: "T003",
-    name: "Ms. Emily Davis",
-    email: "emily.davis@school.edu",
-    phone: "+1 (555) 456-7890",
-    subjects: ["English Literature", "Creative Writing"],
-    department: "English",
-    joinDate: "2021-01-10",
-    status: "active",
-    classesAssigned: 6,
-    totalStudents: 180,
-  },
-  {
-    id: "T004",
-    name: "Mr. Robert Wilson",
-    email: "robert.wilson@school.edu",
-    phone: "+1 (555) 321-0987",
-    subjects: ["History", "Geography"],
-    department: "Social Studies",
-    joinDate: "2018-07-20",
-    status: "inactive",
-    classesAssigned: 0,
-    totalStudents: 0,
-  },
-];
+import adminApi from "@/utils/api";
+import { toast } from "sonner";
 
 export default function Teachers() {
-  const [teachers, setTeachers] = useState(mockTeachers);
+  const [teachers, setTeachers] = useState([]);
+  const [teac, setTeac] = useState([]);
+  const [sess, setSess] = useState([]);
+  const [stu, setStu] = useState([]);
+  const [dep, setDep] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingTeacher, setEditingTeacher] = useState(null);
+
   const [newTeacher, setNewTeacher] = useState({
     name: "",
     email: "",
@@ -73,6 +31,63 @@ export default function Teachers() {
     department: "",
     subjects: "",
   });
+  const [editTeacher, setEditTeacher] = useState({
+    name: "",
+    email: "",
+    phone_number: "",
+    department: "",
+    subject: "",
+  });
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await adminApi.get("/total_teacher/");
+        setTeac(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    const fetchSess = async () => {
+      try {
+        const res = await adminApi.get("/class-sessions/");
+        setSess(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    const fetchStu = async () => {
+      try {
+        const res = await adminApi.get("/total_stu/");
+        setStu(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    const fetchdep = async () => {
+      try {
+        const res = await adminApi.get("/total_departments/");
+        setDep(res.data.departments);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetch();
+    fetchSess();
+    fetchStu();
+    fetchdep();
+    fetchTeacher();
+  }, []);
+
+  const fetchTeacher = async () => {
+    try {
+      const res = await adminApi.get("/teachers/");
+      setTeachers(res.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const filteredTeacher = teachers.filter((teacher) => {
     const matchesSearch =
@@ -88,10 +103,7 @@ export default function Teachers() {
     return matchesSearch && matchesDepartment;
   });
 
-  const departments = Array.from(new Set(teachers.map((t) => t.department)));
   const activeTeachers = teachers.filter((t) => t.status === "active").length;
-  const totalClasses = teachers.reduce((sum, t) => sum + t.classesAssigned, 0);
-  const totalStudents = teachers.reduce((sum, t) => sum + t.totalStudents, 0);
 
   const generateTeacherId = () => {
     const existingIds = teachers.map((t) => parseInt(t.id.substring(1)));
@@ -100,13 +112,11 @@ export default function Teachers() {
   };
 
   const handleAddTeacher = () => {
-    // Validate required fields
     if (!newTeacher.name || !newTeacher.email || !newTeacher.department) {
       alert("Please fill in all required fields");
       return;
     }
 
-    // Create properly structured teacher object
     const teacherToAdd = {
       id: generateTeacherId(),
       name: newTeacher.name,
@@ -130,12 +140,59 @@ export default function Teachers() {
       email: "",
       phone: "",
       department: "",
-      subjects: "",
+      subject: "",
     });
   };
 
   const handleEditTeacher = (teacherId) => {
-    console.log("Editing teacher:", teacherId);
+    const teacher = teachers.find((t) => t.id === teacherId);
+    if (teacher) {
+      setEditingTeacher(teacher);
+
+      setEditTeacher({
+        name: teacher.name,
+        email: teacher.email,
+        phone_number: teacher.phone_number || teacher.phone || "",
+        department: teacher.department,
+        subject: teacher.subject || "",
+        status: teacher.status || "active",
+      });
+      setIsEditModalOpen(true);
+    }
+  };
+
+  const handleUpdateTeacher = async () => {
+    if (!editingTeacher) return;
+
+    try {
+      const updateData = {
+        name: editTeacher.name,
+        email: editTeacher.email,
+        phone_number: editTeacher.phone_number,
+        department: editTeacher.department,
+        subject: editTeacher.subject,
+        status: editTeacher.status,
+      };
+
+      await adminApi.put(`/update_teacher/${editingTeacher.id}/`, updateData);
+
+      toast.success("Teacher updated successfully");
+      setIsEditModalOpen(false);
+      setEditingTeacher(null);
+      setEditTeacher({
+        name: "",
+        email: "",
+        phone_number: "",
+        department: "",
+        subject: "",
+        status: "",
+      });
+
+      fetchTeacher();
+    } catch (error) {
+      console.error("Update failed:", error);
+      toast.error("Update failed");
+    }
   };
 
   const handleDeleteTeacher = (teacherId) => {
@@ -168,7 +225,7 @@ export default function Teachers() {
             </h3>
             <BookOpen className="h-4 w-4 text-gray-400" />
           </div>
-          <div className="text-2xl font-bold">{teachers.length}</div>
+          <div className="text-2xl font-bold">{teac.length}</div>
           <p className="text-xs text-gray-500">
             {activeTeachers} active teachers
           </p>
@@ -178,7 +235,7 @@ export default function Teachers() {
             <h3 className="text-sm font-medium text-gray-600">Total Classes</h3>
             <Calendar className="h-4 w-4 text-gray-400" />
           </div>
-          <div className="text-2xl font-bold">{totalClasses}</div>
+          <div className="text-2xl font-bold">{sess.length}</div>
           <p className="text-xs text-gray-500">Classes assigned</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow border">
@@ -188,7 +245,7 @@ export default function Teachers() {
             </h3>
             <BookOpen className="h-4 w-4 text-gray-400" />
           </div>
-          <div className="text-2xl font-bold">{totalStudents}</div>
+          <div className="text-2xl font-bold">{stu.length}</div>
           <p className="text-xs text-gray-500">Students enrolled</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow border">
@@ -196,7 +253,7 @@ export default function Teachers() {
             <h3 className="text-sm font-medium text-gray-600">Departments</h3>
             <BookOpen className="h-4 w-4 text-gray-400" />
           </div>
-          <div className="text-2xl font-bold">{departments.length}</div>
+          <div className="text-2xl font-bold">{dep.length}</div>
           <p className="text-xs text-gray-500">Active departments</p>
         </div>
       </div>
@@ -221,9 +278,8 @@ export default function Teachers() {
             onChange={(e) => setSelectedDepartment(e.target.value)}
             className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
           >
-            <option value="">All departments</option>
             <option value="all">All departments</option>
-            {departments.map((dept) => (
+            {dep.map((dept) => (
               <option key={dept} value={dept}>
                 {dept}
               </option>
@@ -251,9 +307,6 @@ export default function Teachers() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Subjects
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Classes
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -292,31 +345,9 @@ export default function Teachers() {
                     {teacher.department}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex flex-wrap gap-1">
-                      {teacher.subjects.slice(0, 2).map((subject) => (
-                        <span
-                          key={subject}
-                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                        >
-                          {subject}
-                        </span>
-                      ))}
-                      {teacher.subjects.length > 2 && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-800">
-                          +{teacher.subjects.length - 2}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {teacher.classesAssigned}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {teacher.totalStudents} students
-                      </div>
-                    </div>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      {teacher.subject}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
@@ -352,7 +383,6 @@ export default function Teachers() {
         </div>
       </div>
 
-      {/* Add Teacher Dialog */}
       {isAddDialogOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -422,14 +452,11 @@ export default function Teachers() {
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select department</option>
-                  {departments.map((dept) => (
+                  {dep.map((dept) => (
                     <option key={dept} value={dept}>
                       {dept}
                     </option>
                   ))}
-                  <option value="Computer Science">Computer Science</option>
-                  <option value="Art">Art</option>
-                  <option value="Music">Music</option>
                 </select>
               </div>
 
@@ -461,6 +488,142 @@ export default function Teachers() {
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 Add Teacher
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isEditModalOpen && editingTeacher && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-h-[90vh]  max-w-md">
+            <h2 className="text-lg font-semibold ">Edit Teacher</h2>
+
+            <div className="space-y-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={editTeacher.name}
+                  onChange={(e) =>
+                    setEditTeacher({ ...editTeacher, name: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={editTeacher.email}
+                  onChange={(e) =>
+                    setEditTeacher({ ...editTeacher, email: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={editTeacher.phone_number}
+                  onChange={(e) =>
+                    setEditTeacher({
+                      ...editTeacher,
+                      phone_number: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Department *
+                </label>
+                <select
+                  value={editTeacher.department}
+                  onChange={(e) =>
+                    setEditTeacher({
+                      ...editTeacher,
+                      department: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select department</option>
+                  {dep.map((dept) => (
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Subjects
+                </label>
+                <input
+                  value={editTeacher.subject}
+                  onChange={(e) =>
+                    setEditTeacher({ ...editTeacher, subject: e.target.value })
+                  }
+                  placeholder="subject"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows="3"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status *
+                </label>
+                <select
+                  value={editTeacher.status}
+                  onChange={(e) =>
+                    setEditTeacher({ ...editTeacher, status: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-5 mt-2">
+              <button
+                type="button"
+                className="px-4 py-2 text-gray-600 border rounded-md hover:bg-gray-50"
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditingTeacher(null);
+                  setEditTeacher({
+                    name: "",
+                    email: "",
+                    phone_number: "",
+                    department: "",
+                    subject: "",
+                    status: "",
+                  });
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                onClick={handleUpdateTeacher}
+              >
+                Update Teacher
               </button>
             </div>
           </div>

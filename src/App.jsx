@@ -5,6 +5,7 @@ import History from "./components/History";
 import Login from "./components/Login";
 import AdminLayout from "./components/Layout";
 import Students from "./components/Students";
+import StudentData from "./components/Students";
 import Teachers from "./components/Teachers";
 import Alerts from "./components/Alert";
 import ClassSession from "./components/session";
@@ -20,7 +21,10 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="attendance" element={<Attendance />} />
             <Route path="history" element={<History />} />
-            <Route path="students" element={<Students />} />
+            <Route path="students">
+              <Route index element={<Students />} />
+              <Route path=":id" element={<StudentData />} />
+            </Route>
             <Route path="teachers" element={<Teachers />} />
             <Route path="alert" element={<Alerts />} />
             <Route path="session" element={<ClassSession />} />

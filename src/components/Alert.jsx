@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -18,50 +18,59 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, Mail, Users } from "lucide-react";
 import { toast } from "sonner";
-
-const lowAttendanceStudents = [
-  {
-    id: "23186536",
-    name: "Anjal Ghalan",
-    email: "anjal@mail.com ",
-    attendance: 58,
-    semester: "5",
-  },
-  {
-    id: "23186537",
-    name: "Samundra Acharya",
-    email: "samundra@mail.com",
-    attendance: 72,
-    semester: "6",
-  },
-  {
-    id: "23186538",
-    name: "Niraj Chaudhary",
-    email: "niraj@mail.com",
-    attendance: 56,
-    semester: "5",
-  },
-];
+import adminApi from "@/utils/api";
 
 export default function Alerts() {
   const [sendingWarning, setSendingWarning] = useState(null);
+  const [lowAttendanceStudents, setLowAttendanceStudents] = useState([]);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const res = await adminApi.get("/alerts/low-attendance/");
+        setLowAttendanceStudents(res.data);
+      } catch (err) {
+        console.log("Failed to fetch Studets", err);
+      }
+    };
+    fetchStudents();
+  }, []);
 
   const handleSendWarning = async (studentId, studentName) => {
     setSendingWarning(studentId);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    toast("Warning Sent", {
-      description: `Low attendance warning sent to ${studentName}`,
-    });
-    setSendingWarning(null);
+    try {
+      const studentToSend = lowAttendanceStudents.find(
+        (s) => s.id === studentId
+      );
+      await adminApi.post("/alerts/send-alerts/", {
+        students: [studentToSend],
+      });
+
+      toast("Warning Sent", {
+        description: `Low attendance warning sent to ${studentName}`,
+      });
+    } catch {
+      toast.error("Failed to send warning.");
+    } finally {
+      setSendingWarning(null);
+    }
   };
 
   const handleSendAllWarnings = async () => {
     setSendingWarning("all");
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    toast("Warnings Sent", {
-      description: `Low attendance warnings sent to ${lowAttendanceStudents.length} students`,
-    });
-    setSendingWarning(null);
+    try {
+      await adminApi.post("/alerts/send-alerts/", {
+        students: lowAttendanceStudents,
+      });
+
+      toast("Warnings Sent", {
+        description: `Low attendance warnings sent to ${lowAttendanceStudents.length} students`,
+      });
+    } catch {
+      toast.error("Failed to send warnings.");
+    } finally {
+      setSendingWarning(null);
+    }
   };
 
   const getAttendanceColor = (percentage) => {
