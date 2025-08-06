@@ -28,3 +28,19 @@ The backend is successfully deployed on an **Azure Virtual Machine** using:
 
 ## 📁 Project Structure
 
+
+## ⚙️ Setup Instructions (Local)
+
+### Prerequisites
+
+- Python 3.9+
+- pip
+- virtualenv
+- SQLite or PostgreSQL
+- (Optional) Docker
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Ranjesh2002/AttenQR_Admin.git
+cd qr-attendance-backend
