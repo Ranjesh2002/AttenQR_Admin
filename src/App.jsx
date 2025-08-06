@@ -5,10 +5,10 @@ import History from "./components/History";
 import Login from "./components/Login";
 import AdminLayout from "./components/Layout";
 import Students from "./components/Students";
-import StudentData from "./components/Students";
 import Teachers from "./components/Teachers";
 import Alerts from "./components/Alert";
 import ClassSession from "./components/session";
+import StudentProfile from "./components/StudentProfile";
 import { Toaster } from "sonner";
 
 function App() {
@@ -23,7 +23,7 @@ function App() {
             <Route path="history" element={<History />} />
             <Route path="students">
               <Route index element={<Students />} />
-              <Route path=":id" element={<StudentData />} />
+              <Route path=":studentId" element={<StudentProfile />} />
             </Route>
             <Route path="teachers" element={<Teachers />} />
             <Route path="alert" element={<Alerts />} />

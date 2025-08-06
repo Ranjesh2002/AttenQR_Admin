@@ -26,11 +26,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Eye, Search, Users, GraduationCap, AlertTriangle } from "lucide-react";
 import adminApi from "@/utils/api";
-import StudentData from "./StudentData";
+import { useNavigate } from "react-router-dom";
 
 export default function Students() {
-  const [selectedSession, setSelectedSession] = useState(null);
-  const [showDetails, setShowDetails] = useState(false);
+  const navigate = useNavigate();
   const [selectedSemester, setSelectedSemester] = useState("3rd");
   const [searchTerm, setSearchTerm] = useState("");
   const [stu, setStu] = useState([]);
@@ -237,10 +236,7 @@ export default function Students() {
                       variant="outline"
                       size="sm"
                       className="rounded-lg"
-                      onClick={() => {
-                        setSelectedSession(student.id);
-                        setShowDetails(true);
-                      }}
+                      onClick={() => navigate(`/students/${student.id}`)}
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       View Profile
@@ -252,17 +248,6 @@ export default function Students() {
           </Table>
         </CardContent>
       </Card>
-      {selectedSession && (
-        <StudentData
-          isOpen={showDetails}
-          onClose={() => {
-            setShowDetails(false);
-            setSelectedSession(null);
-          }}
-          sessionId={selectedSession}
-          sessionInfo={stulist.find((s) => s.id === selectedSession)}
-        />
-      )}
     </div>
   );
 }
