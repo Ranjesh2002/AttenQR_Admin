@@ -32,66 +32,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-const mockStudent = {
-  id: "STU001",
-  name: "Ranjesh Thakur",
-  email: "ranjesh@mail.com",
-  phone: "+1 (555) 123-4567",
-  semester: "Fall 2024",
-  enrollmentDate: "2023-08-15",
-  attendanceRate: 92,
-  totalClasses: 48,
-  presentClasses: 44,
-  absentClasses: 3,
-  lateClasses: 1,
-  department: "Computer Science",
-  year: "2nd Year",
-};
-
-const mockAttendanceHistory = [
-  {
-    id: "1",
-    date: "2024-01-15",
-    subject: "Data Structures",
-    status: "present",
-    time: "09:15 AM",
-    teacher: "Dr. Smith",
-  },
-  {
-    id: "2",
-    date: "2024-01-14",
-    subject: "Algorithms",
-    status: "late",
-    time: "10:25 AM",
-    teacher: "Prof. Johnson",
-  },
-  {
-    id: "3",
-    date: "2024-01-13",
-    subject: "Database Systems",
-    status: "absent",
-    teacher: "Dr. Wilson",
-  },
-  {
-    id: "4",
-    date: "2024-01-12",
-    subject: "Web Development",
-    status: "present",
-    time: "02:10 PM",
-    teacher: "Mr. Brown",
-  },
-  {
-    id: "5",
-    date: "2024-01-11",
-    subject: "Operating Systems",
-    status: "present",
-    time: "11:05 AM",
-    teacher: "Dr. Davis",
-  },
-];
+import adminApi from "@/utils/api";
+import { useParams } from "react-router-dom";
 
 export default function StudentProfile() {
-  // const { studentId } = useParams();
+  const { studentId } = useParams();
   const navigate = useNavigate();
   const [student, setStudent] = useState(null);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
@@ -100,15 +45,25 @@ export default function StudentProfile() {
   useEffect(() => {
     const fetchStudentData = async () => {
       setIsLoading(true);
-      setTimeout(() => {
-        setStudent(mockStudent);
-        setAttendanceHistory(mockAttendanceHistory);
+      try {
+        const res = await adminApi.get(`/student_detail/${studentId}/`);
+        setStudent(res.data);
+        const attendanceRes = await adminApi.get(
+          `/student_atten_admin/${studentId}/`
+        );
+        setAttendanceHistory(attendanceRes.data.attendance_history || []);
+      } catch (err) {
+        console.error("Error fetching student:", err);
+        setAttendanceHistory([]);
+      } finally {
         setIsLoading(false);
-      }, 500);
+      }
     };
 
-    fetchStudentData();
-  }, []);
+    if (studentId) {
+      fetchStudentData();
+    }
+  }, [studentId]);
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -224,7 +179,7 @@ export default function StudentProfile() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{student.year}</span>
+                  <span className="text-sm">{student.semester}</span>
                 </div>
               </div>
             </div>
@@ -269,7 +224,7 @@ export default function StudentProfile() {
                 <p className="text-sm font-medium text-muted-foreground">
                   Absent
                 </p>
-                <p className="text-2xl font-bold">{student.absentClasses}</p>
+                <p className="text-2xl font-bold">{student.absent}</p>
               </div>
             </div>
           </CardContent>
@@ -283,7 +238,7 @@ export default function StudentProfile() {
                 <p className="text-sm font-medium text-muted-foreground">
                   Late
                 </p>
-                <p className="text-2xl font-bold">{student.lateClasses}</p>
+                <p className="text-2xl font-bold">{student.lateAttendances}</p>
               </div>
             </div>
           </CardContent>
@@ -316,22 +271,31 @@ export default function StudentProfile() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {attendanceHistory.map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell className="font-medium">
-                        {new Date(record.date).toLocaleDateString()}
+                  {Array.isArray(attendanceHistory) &&
+                  attendanceHistory.length > 0 ? (
+                    attendanceHistory.map((record) => (
+                      <TableRow key={record.id}>
+                        <TableCell className="font-medium">
+                          {new Date(record.date).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>{record.subject}</TableCell>
+                        <TableCell>{record.teacher}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            {getStatusIcon(record.status)}
+                            {getStatusBadge(record.status)}
+                          </div>
+                        </TableCell>
+                        <TableCell>{record.time || "-"}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center">
+                        No attendance records found
                       </TableCell>
-                      <TableCell>{record.subject}</TableCell>
-                      <TableCell>{record.teacher}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          {getStatusIcon(record.status)}
-                          {getStatusBadge(record.status)}
-                        </div>
-                      </TableCell>
-                      <TableCell>{record.time || "-"}</TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </CardContent>

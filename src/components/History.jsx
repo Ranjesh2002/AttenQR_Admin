@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, Download, Filter, Search, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,46 +20,30 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import AttendanceHistory from "./StudentsAttendanceDetail";
-
-const mockAttendanceHistory = [
-  {
-    id: "1",
-    subject: "Mathematics",
-    teacher: "Dr. Smith",
-    date: "2024-01-15",
-    time: "09:00 AM",
-    status: "Present",
-    rate: 95,
-  },
-  {
-    id: "2",
-    subject: "Physics",
-    teacher: "Prof. Johnson",
-    date: "2024-01-15",
-    time: "10:30 AM",
-    status: "Late",
-    rate: 70,
-  },
-  {
-    id: "3",
-    subject: "Chemistry",
-    teacher: "Dr. Brown",
-    date: "2024-01-14",
-    time: "11:00 AM",
-    status: "Absent",
-    rate: 50,
-  },
-];
+import adminApi from "@/utils/api";
 
 export default function History() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
+  const [history, setHistory] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedDateRange, setSelectedDateRange] = useState("");
   const [showDetails, setShowDetails] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
 
-  const filteredHistory = mockAttendanceHistory.filter((record) => {
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await adminApi.get("/admin_attendance_history/");
+        setHistory(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetch();
+  }, []);
+
+  const filteredHistory = history.filter((record) => {
     const matchesSearch =
       record.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
       record.teacher.toLowerCase().includes(searchTerm.toLowerCase());
@@ -69,7 +53,6 @@ export default function History() {
 
     return matchesSearch && matchesSubject && matchesStatus;
   });
-
 
   const getAttendanceBadge = (rate) => {
     if (rate >= 90)
@@ -81,18 +64,18 @@ export default function History() {
     return <Badge className="bg-red-100 text-red-800">Poor</Badge>;
   };
 
-  const getRateBadge = (rate) => {
-    let color = "text-blue-800 bg-blue-100";
-    if (rate >= 75) color = "text-green-800 bg-green-100";
-    else if (rate >= 50) color = "text-yellow-800 bg-yellow-100";
-    else color = "text-red-800 bg-red-100";
+  // const getRateBadge = (rate) => {
+  //   let color = "text-blue-800 bg-blue-100";
+  //   if (rate >= 75) color = "text-green-800 bg-green-100";
+  //   else if (rate >= 50) color = "text-yellow-800 bg-yellow-100";
+  //   else color = "text-red-800 bg-red-100";
 
-    return (
-      <span className={`text-sm px-2 py-1 rounded-full font-medium ${color}`}>
-        {rate}%
-      </span>
-    );
-  };
+  //   return (
+  //     <span className={`text-sm px-2 py-1 rounded-full font-medium ${color}`}>
+  //       {rate}%
+  //     </span>
+  //   );
+  // };
 
   const handleExport = () => {
     console.log("Exporting attendance history...");
@@ -203,7 +186,7 @@ export default function History() {
                   <TableCell>{record.teacher}</TableCell>
                   <TableCell>{record.date}</TableCell>
                   <TableCell>{record.time}</TableCell>
-                  <TableCell>{getRateBadge(record.rate)}</TableCell>
+                  <TableCell>{record.percentage}%</TableCell>
                   <TableCell>{getAttendanceBadge(record.rate)}</TableCell>
 
                   <TableCell>
@@ -240,9 +223,7 @@ export default function History() {
             setSelectedSession(null);
           }}
           sessionId={selectedSession}
-          sessionInfo={mockAttendanceHistory.find(
-            (s) => s.id === selectedSession
-          )}
+          sessionInfo={history.find((s) => s.id === selectedSession)}
         />
       )}
     </div>

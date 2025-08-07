@@ -95,6 +95,14 @@ const subjectWiseData = [
 export default function Dashboard() {
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">
+            View attendance graph and charts here
+          </p>
+        </div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {statsData.map((stat, index) => (
           <div key={index} className="rounded-xl shadow-sm bg-white p-4">
