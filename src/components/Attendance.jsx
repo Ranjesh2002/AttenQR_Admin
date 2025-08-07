@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Eye, Users, Clock } from "lucide-react";
 import AttendanceHistory from "./StudentsAttendanceDetail";
+import adminApi from "@/utils/api";
 
 const todaysAttendance = [
   {
@@ -65,6 +66,19 @@ const todaysAttendance = [
 export default function Attendance() {
   const [selectedSession, setSelectedSession] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [atten, setAtten] = useState([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await adminApi.get("/today_attendance_history");
+        setAtten(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetch();
+  });
 
   const getAttendanceRate = (present, total) => {
     return Math.round((present / total) * 100);
@@ -82,6 +96,16 @@ export default function Attendance() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Today's Class Sessions
+          </h1>
+          <p className="text-muted-foreground">
+            View and filter todays class session
+          </p>
+        </div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="rounded-xl shadow-sm">
           <CardContent className="p-4">
@@ -92,7 +116,7 @@ export default function Attendance() {
                   Total Sessions
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {todaysAttendance.length}
+                  {atten.length}
                 </p>
               </div>
             </div>
@@ -173,12 +197,6 @@ export default function Attendance() {
                   Time
                 </TableHead>
                 <TableHead className="font-semibold text-gray-700">
-                  Present
-                </TableHead>
-                <TableHead className="font-semibold text-gray-700">
-                  Absent
-                </TableHead>
-                <TableHead className="font-semibold text-gray-700">
                   Rate
                 </TableHead>
                 <TableHead className="font-semibold text-gray-700">
@@ -190,54 +208,54 @@ export default function Attendance() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {todaysAttendance.map((session) => {
-                const rate = getAttendanceRate(
-                  session.presentCount,
-                  session.totalStudents
-                );
-                return (
-                  <TableRow
-                    key={session.id}
-                    className="border-gray-100 hover:bg-gray-50"
-                  >
-                    <TableCell className="font-medium text-gray-900">
-                      {session.subject}
-                    </TableCell>
-                    <TableCell className="text-gray-600">
-                      {session.teacher}
-                    </TableCell>
-                    <TableCell className="text-gray-600">
-                      {session.time}
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        {session.presentCount}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        {session.absentCount}
-                      </span>
-                    </TableCell>
-                    <TableCell className="font-medium">{rate}%</TableCell>
-                    <TableCell>{getAttendanceBadge(rate)}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-lg"
-                        onClick={() => {
-                          setSelectedSession(session.id);
-                          setShowDetails(true);
-                        }}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View Details
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {atten && atten.length > 0 ? (
+                atten.map((session) => {
+                  const rate = getAttendanceRate(
+                    session.presentCount,
+                    session.totalStudents
+                  );
+                  return (
+                    <TableRow
+                      key={session.id}
+                      className="border-gray-100 hover:bg-gray-50"
+                    >
+                      <TableCell className="font-medium text-gray-900">
+                        {session.subject}
+                      </TableCell>
+                      <TableCell className="text-gray-600">
+                        {session.teacher}
+                      </TableCell>
+                      <TableCell className="text-gray-600">
+                        {session.time}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {session.percentage}%
+                      </TableCell>
+                      <TableCell>{getAttendanceBadge(rate)}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-lg"
+                          onClick={() => {
+                            setSelectedSession(session.id);
+                            setShowDetails(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View Details
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center">
+                    No class session found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>

@@ -98,6 +98,12 @@ export default function Students() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Students</h1>
+          <p className="text-muted-foreground">View and manage students here</p>
+        </div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="rounded-xl shadow-sm">
           <CardContent className="p-4">
