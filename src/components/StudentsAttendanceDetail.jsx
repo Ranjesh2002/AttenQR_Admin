@@ -26,74 +26,6 @@ import { Input } from "@/components/ui/input";
 import { X, Search, Clock, Users, UserCheck } from "lucide-react";
 import adminApi from "@/utils/api";
 
-// const generateStudentData = (sessionId) => {
-//   const baseStudents = [
-//     { id: "1", name: "Alice Johnson", studentId: "STU001" },
-//     { id: "2", name: "Bob Smith", studentId: "STU002" },
-//     { id: "3", name: "Charlie Brown", studentId: "STU003" },
-//     { id: "4", name: "Diana Prince", studentId: "STU004" },
-//     { id: "5", name: "Edward Norton", studentId: "STU005" },
-//     { id: "6", name: "Fiona Green", studentId: "STU006" },
-//     { id: "7", name: "George Lucas", studentId: "STU007" },
-//     { id: "8", name: "Hannah Davis", studentId: "STU008" },
-//     { id: "9", name: "Ian Malcolm", studentId: "STU009" },
-//     { id: "10", name: "Jane Foster", studentId: "STU010" },
-//     { id: "11", name: "Kevin Hart", studentId: "STU011" },
-//     { id: "12", name: "Lisa Simpson", studentId: "STU012" },
-//     { id: "13", name: "Mike Wilson", studentId: "STU013" },
-//     { id: "14", name: "Nina Patel", studentId: "STU014" },
-//     { id: "15", name: "Oscar Wild", studentId: "STU015" },
-//     { id: "16", name: "Paula Abdul", studentId: "STU016" },
-//     { id: "17", name: "Quinn Adams", studentId: "STU017" },
-//     { id: "18", name: "Rachel Green", studentId: "STU018" },
-//     { id: "19", name: "Steve Rogers", studentId: "STU019" },
-//     { id: "20", name: "Tina Turner", studentId: "STU020" },
-//     { id: "21", name: "Uma Thurman", studentId: "STU021" },
-//     { id: "22", name: "Victor Hugo", studentId: "STU022" },
-//     { id: "23", name: "Wendy Williams", studentId: "STU023" },
-//     { id: "24", name: "Xander Harris", studentId: "STU024" },
-//     { id: "25", name: "Yara Shahidi", studentId: "STU025" },
-//     { id: "26", name: "Zoe Saldana", studentId: "STU026" },
-//     { id: "27", name: "Aaron Paul", studentId: "STU027" },
-//     { id: "28", name: "Betty White", studentId: "STU028" },
-//     { id: "29", name: "Carl Johnson", studentId: "STU029" },
-//     { id: "30", name: "Donna Noble", studentId: "STU030" },
-//     { id: "31", name: "Ethan Hunt", studentId: "STU031" },
-//     { id: "32", name: "Felicity Jones", studentId: "STU032" },
-//     { id: "33", name: "Gary Oldman", studentId: "STU033" },
-//   ];
-
-//   const random = new Array(33)
-//     .fill(0)
-//     .map((_, i) => (sessionId * 17 + i * 13) % 100);
-
-//   return baseStudents.map((student, index) => {
-//     const randValue = random[index];
-//     let status;
-//     let checkinTime;
-
-//     if (randValue < 10) {
-//       status = "absent";
-//     } else if (randValue < 20) {
-//       status = "late";
-//       checkinTime = `${9 + Math.floor(randValue / 10)}:${
-//         15 + (randValue % 4) * 15
-//       } AM`;
-//     } else {
-//       status = "present";
-//       checkinTime = `${8 + Math.floor(randValue / 20)}:${
-//         (randValue % 4) * 15 || 45
-//       } AM`;
-//     }
-
-//     return {
-//       ...student,
-//       status,
-//       checkinTime,
-//     };
-//   });
-// };
-
 export default function AttendanceHistory({
   isOpen,
   onClose,
@@ -112,7 +44,7 @@ export default function AttendanceHistory({
       const fetchAttendanceData = async () => {
         try {
           const response = await adminApi.get(
-            `/attendance_by_session/${sessionId}/`
+            `/attendance_by_class_session/${sessionId}/`
           );
           setStudents(response.data.students);
           setFilteredStudents(response.data.students);
