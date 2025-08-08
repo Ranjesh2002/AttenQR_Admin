@@ -118,6 +118,7 @@ export default function AttendanceHistory({
           setFilteredStudents(response.data.students);
         } catch (error) {
           console.error("Error fetching attendance data:", error);
+          console.log("Fetching attendance for session:", sessionId);
         } finally {
           setLoading(false);
         }
