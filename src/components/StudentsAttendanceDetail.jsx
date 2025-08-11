@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -115,6 +116,9 @@ export default function AttendanceHistory({
             <DialogTitle className="text-xl font-semibold">
               Student Attendance Details
             </DialogTitle>
+            <DialogDescription>
+              View attendance status for students in this class session.
+            </DialogDescription>
             {sessionInfo && (
               <p className="text-sm text-muted-foreground mt-1">
                 {sessionInfo.subject} • {sessionInfo.teacher} •{" "}
