@@ -26,7 +26,6 @@ export default function History() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [history, setHistory] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedDateRange, setSelectedDateRange] = useState("");
   const [showDetails, setShowDetails] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
@@ -49,9 +48,8 @@ export default function History() {
       record.teacher.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSubject =
       selectedSubject === "all" || record.subject === selectedSubject;
-    const matchesStatus = !selectedStatus || record.status === selectedStatus;
 
-    return matchesSearch && matchesSubject && matchesStatus;
+    return matchesSearch && matchesSubject;
   });
 
   const getAttendanceBadge = (rate) => {
@@ -64,18 +62,18 @@ export default function History() {
     return <Badge className="bg-red-100 text-red-800">Poor</Badge>;
   };
 
-  // const getRateBadge = (rate) => {
-  //   let color = "text-blue-800 bg-blue-100";
-  //   if (rate >= 75) color = "text-green-800 bg-green-100";
-  //   else if (rate >= 50) color = "text-yellow-800 bg-yellow-100";
-  //   else color = "text-red-800 bg-red-100";
+  const getRateBadge = (rate) => {
+    let color = "text-blue-800 bg-blue-100";
+    if (rate >= 75) color = "text-green-800 bg-green-100";
+    else if (rate >= 50) color = "text-yellow-800 bg-yellow-100";
+    else color = "text-red-800 bg-red-100";
 
-  //   return (
-  //     <span className={`text-sm px-2 py-1 rounded-full font-medium ${color}`}>
-  //       {rate}%
-  //     </span>
-  //   );
-  // };
+    return (
+      <span className={`text-sm px-2 py-1 rounded-full font-medium ${color}`}>
+        {rate}%
+      </span>
+    );
+  };
 
   const handleExport = () => {
     console.log("Exporting attendance history...");
@@ -123,21 +121,9 @@ export default function History() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Subjects</SelectItem>
-                <SelectItem value="Mathematics">Mathematics</SelectItem>
-                <SelectItem value="Physics">Physics</SelectItem>
-                <SelectItem value="Chemistry">Chemistry</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Present">Present</SelectItem>
-                <SelectItem value="Late">Late</SelectItem>
-                <SelectItem value="Absent">Absent</SelectItem>
+                {[...new Set(history.map((h) => h.subject))].map((subject) => (
+                  <SelectItem key={subject}>{subject}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
@@ -186,8 +172,8 @@ export default function History() {
                   <TableCell>{record.teacher}</TableCell>
                   <TableCell>{record.date}</TableCell>
                   <TableCell>{record.time}</TableCell>
-                  <TableCell>{record.percentage}%</TableCell>
-                  <TableCell>{getAttendanceBadge(record.rate)}</TableCell>
+                  <TableCell>{getRateBadge(record.percentage)}</TableCell>
+                  <TableCell>{getAttendanceBadge(record.percentage)}</TableCell>
 
                   <TableCell>
                     <Button
