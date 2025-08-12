@@ -67,6 +67,7 @@ export default function Attendance() {
   const [selectedSession, setSelectedSession] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [atten, setAtten] = useState([]);
+  const [todayatten, setTodayatten] = useState([]);
 
   useEffect(() => {
     const fetch = async () => {
@@ -77,8 +78,17 @@ export default function Attendance() {
         console.log(err);
       }
     };
+    const fetchatten = async () => {
+      try {
+        const res = await adminApi.get("/average_attendance_today");
+        setTodayatten(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
     fetch();
-  });
+    fetchatten();
+  }, []);
 
   const getAttendanceRate = (present, total) => {
     return Math.round((present / total) * 100);
@@ -132,14 +142,7 @@ export default function Attendance() {
                   Avg Attendance
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {Math.round(
-                    todaysAttendance.reduce(
-                      (acc, curr) =>
-                        acc + (curr.presentCount / curr.totalStudents) * 100,
-                      0
-                    ) / todaysAttendance.length
-                  )}
-                  %
+                  {todayatten.average_attendance_percentage}%
                 </p>
               </div>
             </div>
@@ -152,16 +155,10 @@ export default function Attendance() {
               <Eye className="h-8 w-8 text-orange-600 bg-orange-50 p-2 rounded-lg" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-600">
-                  Low Attendance
+                  Total Absent
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {
-                    todaysAttendance.filter(
-                      (session) =>
-                        (session.presentCount / session.totalStudents) * 100 <
-                        75
-                    ).length
-                  }
+                  {todayatten.total_absent}
                 </p>
               </div>
             </div>
