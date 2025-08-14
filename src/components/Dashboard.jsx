@@ -18,30 +18,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
-
-const statsData = [
-  {
-    title: "Average Attendance",
-    value: "87.3%",
-    icon: TrendingUp,
-    color: "text-green-600",
-    bgColor: "bg-green-50",
-  },
-  {
-    title: "Total Students",
-    value: "1,247",
-    icon: Users,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
-  },
-  {
-    title: "Low Attendance",
-    value: "23",
-    icon: AlertTriangle,
-    color: "text-orange-600",
-    bgColor: "bg-orange-50",
-  },
-];
+import { useState, useEffect } from "react";
+import adminApi from "@/utils/api";
 
 const recentActivity = [
   {
@@ -75,15 +53,7 @@ const recentActivity = [
     subject: "Database",
   },
 ];
-const attendanceTrendData = [
-  { day: "Mon", attendance: 85 },
-  { day: "Tue", attendance: 92 },
-  { day: "Wed", attendance: 78 },
-  { day: "Thu", attendance: 89 },
-  { day: "Fri", attendance: 94 },
-  { day: "Sat", attendance: 87 },
-  { day: "Sun", attendance: 82 },
-];
+
 const subjectWiseData = [
   { name: "Mathematics", value: 92, color: "#3B82F6" },
   { name: "Physics", value: 88, color: "#10B981" },
@@ -93,6 +63,50 @@ const subjectWiseData = [
 ];
 
 export default function Dashboard() {
+  const [stu, setStu] = useState([]);
+  const [atten, setAtten] = useState([]);
+  const [low, setLow] = useState([]);
+  const [attendanceTrendData, setAttendanceTrendData] = useState([]);
+
+  useEffect(() => {
+    const fetchStu = async () => {
+      try {
+        const fetch = await adminApi.get("/total_stu/");
+        setStu(fetch.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    const fetchatten = async () => {
+      try {
+        const res = await adminApi.get("/average_percentage/");
+        setAtten(res.data.average_attendance_percentage);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    const fetchlow = async () => {
+      try {
+        const res = await adminApi.get("/alerts/low-attendance/");
+        setLow(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    const fetchTrend = async () => {
+      try {
+        const res = await adminApi.get("/weekly_attendance_trend/");
+        setAttendanceTrendData(res.data);
+      } catch (err) {
+        console.error("Error fetching trend data:", err);
+      }
+    };
+
+    fetchStu();
+    fetchatten();
+    fetchlow();
+    fetchTrend();
+  }, []);
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -104,21 +118,45 @@ export default function Dashboard() {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {statsData.map((stat, index) => (
-          <div key={index} className="rounded-xl shadow-sm bg-white p-4">
-            <div className="flex items-center justify-between">
-              <div>
+        <Card className="rounded-xl shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Users className="h-8 w-8 text-blue-600 bg-blue-50 p-2 rounded-lg" />
+              <div className="ml-3">
                 <p className="text-sm font-medium text-gray-600">
-                  {stat.title}
+                  Total Students
                 </p>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              </div>
-              <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                <p className="text-2xl font-bold text-gray-900">{stu.length}</p>
               </div>
             </div>
-          </div>
-        ))}
+          </CardContent>
+        </Card>
+        <Card className="rounded-xl shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <TrendingUp className="h-8 w-8 text-green-600 bg-green-50 p-2 rounded-lg" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600">
+                  Avg Attendance
+                </p>
+                <p className="text-2xl font-bold text-gray-900">{atten}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="rounded-xl shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <AlertTriangle className="h-8 w-8 text-orange-600 bg-orange-50 p-2 rounded-lg" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600">
+                  Low Attendance
+                </p>
+                <p className="text-2xl font-bold text-gray-900">{low.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="rounded-xl shadow-sm">
