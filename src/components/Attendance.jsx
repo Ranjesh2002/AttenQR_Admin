@@ -72,7 +72,7 @@ export default function Attendance() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await adminApi.get("/today_attendance_history");
+        const res = await adminApi.get("/today_attendance_history/");
         setAtten(res.data);
       } catch (err) {
         console.log(err);
@@ -80,7 +80,7 @@ export default function Attendance() {
     };
     const fetchatten = async () => {
       try {
-        const res = await adminApi.get("/average_attendance_today");
+        const res = await adminApi.get("/average_attendance_today/");
         setTodayatten(res.data);
       } catch (err) {
         console.log(err);
