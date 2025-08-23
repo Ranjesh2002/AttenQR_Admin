@@ -54,19 +54,17 @@ const recentActivity = [
   },
 ];
 
-const subjectWiseData = [
-  { name: "Mathematics", value: 92, color: "#3B82F6" },
-  { name: "Physics", value: 88, color: "#10B981" },
-  { name: "Chemistry", value: 85, color: "#F59E0B" },
-  { name: "Biology", value: 90, color: "#EF4444" },
-  { name: "English", value: 87, color: "#8B5CF6" },
-];
-
 export default function Dashboard() {
   const [stu, setStu] = useState([]);
   const [atten, setAtten] = useState([]);
   const [low, setLow] = useState([]);
   const [attendanceTrendData, setAttendanceTrendData] = useState([]);
+  const [subjectTrendData, setSubjectTrendData] = useState([]);
+
+  const subjectColors = {
+    Database: "#3B82F6", // blue
+    "It infrastructure": "#F59E0B", // amber
+  };
 
   useEffect(() => {
     const fetchStu = async () => {
@@ -102,10 +100,51 @@ export default function Dashboard() {
       }
     };
 
+    const fetchsubject = async () => {
+      try {
+        const res = await adminApi.get("/subject_wise_attendance/");
+        const rawData = res.data;
+
+        const subjectMap = {};
+
+        rawData.forEach((session) => {
+          const subjects = session.name;
+          const color = session.color;
+
+          Object.entries(subjects).forEach(([subjectName, attendance]) => {
+            if (!subjectMap[subjectName]) {
+              subjectMap[subjectName] = {
+                name: subjectName,
+                present: 0,
+                expected: 0,
+                color,
+              };
+            }
+
+            subjectMap[subjectName].present += attendance.present;
+            subjectMap[subjectName].expected += attendance.expected;
+          });
+        });
+
+        const aggregatedData = Object.entries(subjectMap).map(
+          ([subjectName, entry]) => ({
+            name: subjectName,
+            value: Math.round((entry.present / entry.expected) * 100),
+            color: subjectColors[subjectName] || "#6B7280",
+          })
+        );
+
+        setSubjectTrendData(aggregatedData);
+      } catch (err) {
+        console.log("Error loading data:", err);
+      }
+    };
+
     fetchStu();
     fetchatten();
     fetchlow();
     fetchTrend();
+    fetchsubject();
   }, []);
   return (
     <div className="space-y-6">
@@ -205,16 +244,16 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={subjectWiseData}
+                  data={subjectTrendData}
                   cx="50%"
                   cy="50%"
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}%`}
+                  label={(entry) => `${entry.name}: ${entry.value}%`}
                   labelLine={false}
                 >
-                  {subjectWiseData.map((entry, index) => (
+                  {subjectTrendData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
