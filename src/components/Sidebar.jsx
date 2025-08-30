@@ -44,7 +44,14 @@ export default function AdminSidebar() {
     >
       <div className="p-4 border-b border-gray-100 flex items-center justify-between">
         {!collapsed && (
-          <h1 className="text-xl font-bold text-blue-600">AttenQR</h1>
+          // <h1 className="text-xl font-bold text-blue-600">AttenQR</h1>
+          <div class="hover:bg-gray-100 hover:border hover:border-gray-300 transition-all duration-300 p-2 rounded-2xl">
+            <img
+              src="/make the background .png"
+              alt="AttenQR Logo"
+              class="w-30 h-auto"
+            />
+          </div>
         )}
         <Button
           variant="ghost"
