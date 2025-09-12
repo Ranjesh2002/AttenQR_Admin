@@ -94,9 +94,14 @@ export default function Teachers() {
     const matchesSearch =
       teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       teacher.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      teacher.subjects.some((subject) =>
-        subject.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      (Array.isArray(teacher.subjects)
+        ? teacher.subjects.some((subject) =>
+            subject.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        : teacher.subject
+        ? teacher.subject.toLowerCase().includes(searchTerm.toLowerCase())
+        : false);
+
     const matchesDepartment =
       selectedDepartment === "" ||
       selectedDepartment === "all" ||
