@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, Download, Filter, Search, Eye } from "lucide-react";
+import { Calendar, Download, Filter, Search, Eye, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import AttendanceHistory from "./StudentsAttendanceDetail";
 import adminApi from "@/utils/api";
 
-export default function History() {
+export default function Attendance_History() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [history, setHistory] = useState([]);
@@ -49,7 +49,25 @@ export default function History() {
     const matchesSubject =
       selectedSubject === "all" || record.subject === selectedSubject;
 
-    return matchesSearch && matchesSubject;
+    let matchesDate = true;
+    if (selectedDateRange !== "all" && selectedDateRange !== "") {
+      const recordDate = new Date(record.date);
+      const today = new Date();
+
+      if (selectedDateRange === "today") {
+        matchesDate = recordDate.toDateString() === today.toDateString();
+      } else if (selectedDateRange === "week") {
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay()); 
+        matchesDate = recordDate >= startOfWeek && recordDate <= today;
+      } else if (selectedDateRange === "month") {
+        matchesDate =
+          recordDate.getMonth() === today.getMonth() &&
+          recordDate.getFullYear() === today.getFullYear();
+      }
+    }
+
+    return matchesSearch && matchesSubject && matchesDate;
   });
 
   const getAttendanceBadge = (rate) => {
@@ -82,13 +100,16 @@ export default function History() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Attendance History
-          </h1>
-          <p className="text-muted-foreground">
-            View and filter historical attendance records
-          </p>
+        <div className="flex items-center gap-2">
+          <History className="w-12 h-12 text-blue-700 shrink-0" />
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Attendance History
+            </h1>
+            <p className="text-muted-foreground">
+              View and filter historical attendance records
+            </p>
+          </div>
         </div>
         <Button onClick={handleExport} className="flex items-center gap-2">
           <Download className="h-4 w-4" />
@@ -122,7 +143,9 @@ export default function History() {
               <SelectContent>
                 <SelectItem value="all">All Subjects</SelectItem>
                 {[...new Set(history.map((h) => h.subject))].map((subject) => (
-                  <SelectItem key={subject}>{subject}</SelectItem>
+                  <SelectItem key={subject} value={subject}>
+                    {subject}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>

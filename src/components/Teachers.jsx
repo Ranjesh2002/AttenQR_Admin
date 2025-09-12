@@ -8,6 +8,7 @@ import {
   Phone,
   BookOpen,
   Calendar,
+  User,
 } from "lucide-react";
 import adminApi from "@/utils/api";
 import { toast } from "sonner";
@@ -200,13 +201,16 @@ export default function Teachers() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Teachers</h1>
-          <p className="text-gray-600">
-            Manage teacher profiles and assignments
-          </p>
+        <div className="flex items-center gap-2">
+          <User className="w-12 h-12  text-blue-600 shrink-0" />
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Teachers</h1>
+            <p className="text-gray-600">
+              Manage teacher profiles and assignments
+            </p>
+          </div>
         </div>
         <button
           onClick={() => setIsAddDialogOpen(true)}

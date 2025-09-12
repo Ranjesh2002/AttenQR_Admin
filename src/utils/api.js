@@ -1,8 +1,9 @@
 import axios from "axios";
 
 // const BASE_URL = "http://4.248.184.193/api";
-const BASE_URL = "http://attenqr.canadacentral.cloudapp.azure.com/api";
-// const BASE_URL = "http://127.0.0.1:8000/api";
+// const BASE_URL = "http://attenqr.canadacentral.cloudapp.azure.com/api";
+const BASE_URL = "http://127.0.0.1:8000/api";
+// const BASE_URL = "http://192.168.7.34:8000/api";
 const adminApi = axios.create({
   baseURL: BASE_URL,
 });
