@@ -157,6 +157,7 @@ export default function Dashboard() {
         <LayoutDashboard className="w-12 h-12 text-blue-700" />
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <h3 className="text-3xl font-bold tracking-tight">Dashboard-demo</h3>
           <p className="text-muted-foreground">
             View attendance graph and charts here
           </p>
