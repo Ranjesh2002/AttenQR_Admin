@@ -31,7 +31,7 @@ jobs:
           username: ${{ secrets.AZURE_USER }}
           key: ${{ secrets.AZURE_SSH_KEY }}
           source: "dist/**"
-          target: "/home/ranjesh/admin-panel/dist"
+          target: "/home/ranjesh/admin-panel"
           strip_components: 0   
 
       - name: Restart Nginx on VM
