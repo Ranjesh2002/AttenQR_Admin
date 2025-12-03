@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import AttendanceHistory from "./StudentsAttendanceDetail";
 import adminApi from "@/utils/api";
+import DownloadMonthlyAttendanceExcel from "./dailyAttendance";
 
 export default function Attendance_History() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,7 +59,7 @@ export default function Attendance_History() {
         matchesDate = recordDate.toDateString() === today.toDateString();
       } else if (selectedDateRange === "week") {
         const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay()); 
+        startOfWeek.setDate(today.getDate() - today.getDay());
         matchesDate = recordDate >= startOfWeek && recordDate <= today;
       } else if (selectedDateRange === "month") {
         matchesDate =
@@ -93,10 +94,6 @@ export default function Attendance_History() {
     );
   };
 
-  const handleExport = () => {
-    console.log("Exporting attendance history...");
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -111,10 +108,7 @@ export default function Attendance_History() {
             </p>
           </div>
         </div>
-        <Button onClick={handleExport} className="flex items-center gap-2">
-          <Download className="h-4 w-4" />
-          Export History
-        </Button>
+        <DownloadMonthlyAttendanceExcel month={8} year={2025} />
       </div>
 
       <Card>
