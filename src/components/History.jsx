@@ -65,6 +65,11 @@ export default function Attendance_History() {
         matchesDate =
           recordDate.getMonth() === today.getMonth() &&
           recordDate.getFullYear() === today.getFullYear();
+      } else if (selectedDateRange === "yesterday") {
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+
+        matchesDate = recordDate.toDateString() === yesterday.toDateString();
       }
     }
 
