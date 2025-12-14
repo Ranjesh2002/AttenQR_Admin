@@ -1,4 +1,9 @@
-import { Users, TrendingUp, AlertTriangle } from "lucide-react";
+import {
+  Users,
+  TrendingUp,
+  AlertTriangle,
+  LayoutDashboard,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -148,7 +153,8 @@ export default function Dashboard() {
   }, []);
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <LayoutDashboard className="w-12 h-12 text-blue-700" />
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">

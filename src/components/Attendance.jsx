@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, Users, Clock } from "lucide-react";
+import { Eye, Users, Clock, Calendar } from "lucide-react";
 import AttendanceHistory from "./StudentsAttendanceDetail";
 import adminApi from "@/utils/api";
 
@@ -106,7 +106,8 @@ export default function Attendance() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <Calendar className="w-12 h-12  text-blue-700" />
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
             Today's Class Sessions

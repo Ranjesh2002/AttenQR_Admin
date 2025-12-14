@@ -146,7 +146,7 @@ export default function ClassSession() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
-        <CalendarDays className="h-8 w-8 text-blue-600" />
+        <CalendarDays className="w-12 h-12  text-blue-600" />
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Class Sessions</h1>
           <p className="text-gray-600">Create and Manage class sessions</p>
@@ -169,7 +169,7 @@ export default function ClassSession() {
                 value={formData.teacher}
                 onChange={(e) => {
                   handleChange("teacher", e.target.value);
-                  fetchSessionsForTeacher(e.target.value); 
+                  fetchSessionsForTeacher(e.target.value);
                 }}
               >
                 <option value="">Select a teacher</option>

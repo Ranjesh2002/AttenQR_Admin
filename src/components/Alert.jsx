@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, Mail, Users } from "lucide-react";
+import { AlertTriangle, Mail, Users, Bell } from "lucide-react";
 
 import { toast } from "sonner";
 import adminApi from "@/utils/api";
@@ -44,7 +44,7 @@ export default function Alerts() {
         (s) => s.id === studentId
       );
       await adminApi.post("/alerts/send-alerts/", {
-        students: [studentToSend],
+        students: [{ id: studentId, attendance: studentToSend.attendance }],
       });
 
       toast("Warning Sent", {
@@ -61,7 +61,10 @@ export default function Alerts() {
     setSendingWarning("all");
     try {
       await adminApi.post("/alerts/send-alerts/", {
-        students: lowAttendanceStudents,
+        students: lowAttendanceStudents.map((s) => ({
+          id: s.id,
+          attendance: s.attendance,
+        })),
       });
 
       toast("Warnings Sent", {
@@ -83,11 +86,16 @@ export default function Alerts() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Alerts</h1>
-          <p className="text-gray-600 mt-1">
-            Students with low attendance requiring attention
-          </p>
+        <div className="flex items-center gap-2">
+          <Bell className="w-12 h-12  text-orange-600 shrink-0" />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+              Alerts
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Students with low attendance requiring attention
+            </p>
+          </div>
         </div>
         <Button
           onClick={handleSendAllWarnings}
